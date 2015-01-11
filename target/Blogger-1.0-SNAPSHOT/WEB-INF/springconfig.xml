@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/security
+	http://www.springframework.org/schema/security/spring-security-3.2.xsd">
+    
+    
+    <debug />
+    
+    <!-- needed for security tag lib -->
+    <beans:bean id="webexpressionHandler" class="org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler" /> 
+    
+    <http pattern="views/home.jsp" security="none" />
+    
+    <http>
+        <!--<intercept-url pattern="/**" method="POST" access="ROLE_ADMIN" />-->
+        <intercept-url pattern="/addArticle" method="POST" access="ROLE_ADMIN" />
+        <intercept-url pattern="/login" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
+        <intercept-url pattern="/loginfailed" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
+        <intercept-url pattern="/addcomment" method="POST" access="ROLE_USER" />
+        <!--<intercept-url pattern="/**" access="ROLE_USER" method="GET" />-->
+        <form-login login-page="/login.jsp" authentication-failure-url="/loginfailed" 
+                    default-target-url="/loginsuccess" always-use-default-target='true'/>
+        <logout logout-success-url="/home2"/>
+    </http>
+    
+<!--    <authentication-manager>
+        <authentication-provider>
+            <password-encoder hash="plaintext" />
+            <user-service>
+                <user name="beke" password="2222" authorities="ROLE_USER, ROLE_ADMIN" />
+                <user name="kokob" password="3333" authorities="ROLE_USER" />
+                <user name="kalu" password="1111" authorities="ROLE_USER, ROLE_ADMIN" />
+            </user-service>
+        </authentication-provider>
+       
+    </authentication-manager>-->
+
+    <authentication-manager>
+         <authentication-provider>
+            <password-encoder hash="plaintext" />
+            <user-service>
+                <user name="beke" password="2222" authorities="ROLE_USER, ROLE_ADMIN" />
+                <user name="kokob" password="3333" authorities="ROLE_USER" />
+                <user name="kalu" password="1111" authorities="ROLE_USER, ROLE_ADMIN" />
+            </user-service>
+        </authentication-provider>
+        
+        <authentication-provider>
+<!--            <password-encoder hash="bcrypt" />-->
+            <jdbc-user-service data-source-ref="dataSource"  
+                           users-by-username-query="
+            select userName, passWord, 1 enabled from reader where username=?"
+                          authorities-by-username-query="
+            select u.userName, r.roleName from Reader u,
+            Reader_Roles ur,role r where u.id = ur.reader_id and r.id=ur.authority_id
+            and u.userName =?"  />   
+        </authentication-provider>
+    </authentication-manager>
+    
+    <beans:bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <beans:property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <beans:property name="url" value="jdbc:mysql://localhost/cs544"/>
+        <beans:property name="username" value="root"/>
+        <beans:property name="password" value="root"/>
+    </beans:bean>
+    
+    
+
+</beans:beans>
